@@ -1,0 +1,22 @@
+Prelab for lab 2, ECE 152
+Marshal Horn
+
+1.
+a.	UCSR1A is the first control and status register for USART 1.
+b.  If UDREn is set then the transmit buffer is ready for new data to send.
+c.  TXENn enables or disables transmission from USART.
+d.  UCSZn1:0 sets the number of bits to send or recieve in one read or write.  If we set it to 0b11, then it will send 8 bits at a time.
+e.  U2Xn doubles the speed of the USART transfer rate.
+
+2.
+The UDREn bit in UCSRnA tells us if all our data is transmitted, meaning the transmit buffer is ready to accept new data.  If it is not set, then you should not write more data.
+
+3.
+This statement waits until UDR1 is not equal to 0b10101010
+
+4.
+~0b00000010 = 0b11111101 = 253
+0b00010000 & 0b11101111 = 0b0 = 0
+( 1 << 4 ) | 0b01010000 = 0b01010000 = 80
+~( 1 << 2 ) & 0b11111111 = 0b00000100 = 4
+0b01010101 | 0b11000011 = 0b11010111 = 215

@@ -1,0 +1,12 @@
+Study Questions for Lab 1, ECE 152
+Marshal Horn
+
+1.
+a. A tool chain is a group of executables used to compile for a specific device.
+b. Software testing is the process of verifying the functionality of your program and determining what is neccessary to fix bugs.
+c. Hardware testing is the process of making sure the device you're programming works how you think it does.
+d. A makefile gives directions to the compiler for how to compile your program.
+e. An environmental variable is a dynamic variable that affects how your program operates.  In BASH, an example of this is $PATH.
+
+2.
+It seems this course will move more slowly than last term.  I expect to learn about interrupts and communication protocols, implementing and troubleshooting both.  I expect to spend about 5 - 10 hours a week on it.

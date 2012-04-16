@@ -1,0 +1,20 @@
+# Ignore the files that describe our assignment
+*.pdf
+*.zip
+
+# Ignore miscellaneous system files
+*._*
+*.DS_Store
+
+# Ignore compiled files
+*.eep
+*.elf
+*.hex
+*.lss
+*.map
+*.sym
+*.lst
+*.o
+
+# Ignore vim swap files
+*.swp
