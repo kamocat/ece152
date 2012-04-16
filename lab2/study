@@ -1,0 +1,32 @@
+ECE 152 lab 2 Study questions
+Marshal Horn
+
+
+The documentation isn't very clear on what the difference between the
+transmit complete bit and the data register empty bit.  The only
+differences I saw were that the UDRE1 bit is set after a reset (meaning
+it doesn't have to be initialized), and the TXC1 bit needs to be reset
+after every transmit.
+
+Anyways, here's the code I adapted to use the TXC1 bit instead of the
+UDRE1 bit.
+
+/** This function needs to write a single byte to the UART. It must check that the UART is ready for a new byte 
+and return a 1 if the byte was not sent. 
+@param [in] data This is the data byte to be sent.
+@return The function returns a 1 or error and 0 on successful completion.*/
+
+char send_byte(unsigned char data){
+	signed char error = 1;
+
+	if( UCSR1A & 0b01000000 ) {
+		/* Transmit is complete. Clear the flag. */
+		USCR1A |= 0b01000000;
+
+		/* Now send new byte */
+		UDR1 = data;
+		error = 0;
+	}
+	return error;
+
+}
