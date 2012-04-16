@@ -15,6 +15,7 @@
 *.sym
 *.lst
 *.o
+*.o.d
 
 # Ignore vim swap files
 *.swp

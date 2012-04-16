@@ -51,6 +51,10 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 #include <avr/io.h>
 #include <util/delay.h>
 
+/* Found in ../lib/ */
+#include <uart.h>
+#include <adc.h>
+
 /** Constants */
 #define F_CPU 1000000U
 
@@ -152,12 +156,47 @@ int main (void) {
 	initialize();
 	clear_array();
 
+	enum status { init, idle, run, sample, xmit };
 
-	init_timer0();
+	enum status lab3_status = init;
+	char *feedback = malloc( 50 );	// make it "big enough"
+
+	char accel_x;
+	char accel_y;
 
 	while( 1 ) {
-		if( check_timer0() ) {
-			PORTC = ~ PORTC;
+		switch( lab3_status ) {
+			case init:
+				init_timer0();
+				lab3_status = idle;
+				break;
+
+			case idle:
+				if( serial_get_byte() == 's' ) {
+					lab3_status = run;
+				}
+				break;
+
+			case run:
+				if( serial_get_byte() == 's' ) {
+					lab3_status = idle;
+				} else if( check_timer0() ) {
+					lab3_status = sample;
+				}
+				break;
+
+			case sample:
+				accel_x = read_adc( 5 );
+				accel_y = read_adc( 6 );
+				lab3_status = xmit;
+				break;
+
+			case xmit:
+				feedback = sprintf("The x accel is %d and the y accel is %d\r\n", accel_x, accel_y );
+				send_string( feedback );
+				lab3_status = run;
+				break;
+
 		}
 	}
 
