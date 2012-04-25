@@ -4,6 +4,7 @@
 #include <stdlib.h> // for malloc
 #include <string.h>	// for string manipulation functions
 #include <stdio.h>	// for sprintf
+#include <avr/io.h>	// for register macros
 
 #ifndef HORNM_SERIAL_DEBUG
 #define HORNM_SERIAL_DEBUG
@@ -43,12 +44,27 @@ char send_byte(unsigned char data){
 
 }
 
+/* This function receives a single byte from UART.
+ * Be careful, as the the byte can be overwritten if this isn't checked
+ * often enough.
+ * If no byte is received, this returns 0.
+ */
+char get_byte( void ) {
+	char received = 0;
+	if( UCSR1A & 1<<RXC1) {
+		received = UDR1;
+	}
+	return received;
+}
+
+
 /** This function needs to writes a string to the UART. It must check that the UART is ready for a new byte and 
 return a 1 if the string was not sent. 
 @param [in] data This is a pointer to the data to be sent.
 @return The function returns a 1 or error and 0 on successful completion.*/
 
-char send_string(char *data, unsigned char length ){
+char send_string(char *data ){
+	uint8_t length = strlen( data );
 	/* First check if the comm port is ready */
 	char error;
 	if( length > 0 ) {

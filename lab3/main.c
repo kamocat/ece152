@@ -54,6 +54,7 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 /* Found in ../lib/ */
 #include <uart.h>
 #include <adc.h>
+#include <led.h>
 
 /** Constants */
 #define F_CPU 1000000U
@@ -165,6 +166,8 @@ int main (void) {
 	char accel_y;
 
 	while( 1 ) {
+		display_row( (1 << lab3_status), 0, 1 );
+
 		switch( lab3_status ) {
 			case init:
 				init_timer0();
@@ -172,13 +175,13 @@ int main (void) {
 				break;
 
 			case idle:
-				if( serial_get_byte() == 's' ) {
+				if( PINA == 1 /* get_byte() == 's' */ ) {
 					lab3_status = run;
 				}
 				break;
 
 			case run:
-				if( serial_get_byte() == 's' ) {
+				if( PINA == 2/* get_byte() == 's'*/ ) {
 					lab3_status = idle;
 				} else if( check_timer0() ) {
 					lab3_status = sample;
@@ -192,7 +195,7 @@ int main (void) {
 				break;
 
 			case xmit:
-				feedback = sprintf("The x accel is %d and the y accel is %d\r\n", accel_x, accel_y );
+				sprintf( feedback, "The x accel is %d and the y accel is %d\r\n", accel_x, accel_y );
 				send_string( feedback );
 				lab3_status = run;
 				break;
