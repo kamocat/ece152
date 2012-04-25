@@ -49,8 +49,6 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 
 /** Includes */
 #include <avr/io.h>
-
-#define F_CPU 1000000U
 #include <util/delay.h>
 
 /* Found in ../lib/ */
@@ -59,6 +57,7 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 #include <led.h>
 
 /** Constants */
+#define F_CPU 1000000U
 
 
 /** Global Variables */
@@ -93,52 +92,115 @@ void clear_array(void)
 	PORTB |= (1 << PB6) | (1 << PB7);		/** Enable latches*/
 }
 
+
+
+
+/************** TIMER0 SETUP ********************/
+
+
+unsigned char set_timer0(unsigned char clock, unsigned char count) {
+	/*
+	 * This function configures how fast the timer rolls over.
+	 * The clock is masked and copied to CS02:0.
+	 * The count is copied to OCR0A, as the value the timer rolls over at.
+	 */
+	clock &= 0x07;	// mask to last three bits
+	TCCR0B = clock;	// update clock
+	OCR0A = count;
+
+	/* Return an error only if clock or count are equal to zero */
+	return ( !(clock) | !(count) )? 1 : 0;
+}
+
+
+
+unsigned char init_timer0( void ) {
+	/* Clear timer on match - don't change outputs */
+	TCCR0A = 0b00000010;
+
+	/* Set the timer to overflow every 1/4 seconds */
+	set_timer0( 5, 250 );
+
+	return 0;	// this function never fails
+}
+
+unsigned char check_timer0( void ) {
+	/* 
+	 * Check the OCFA flag.  If it is set, clear it and return 1.
+	 * Otherwise, return 0
+	 */
+
+	unsigned char return_value;
+
+	if( TIFR0 & 0b00000100 ) {
+		/* Clear the flag by writing one to it */
+		TIFR0 |= 0b00000100;
+
+		return_value = 1;
+	} else {
+		return_value = 0;
+	}
+	return return_value;
+}
+
+
+
+
+
+
+
 /**************** Main Function *****************/
 
 int main (void) {
 	/** Local Varibles */
 	
 	initialize();
-	init_UART();
 	clear_array();
 
-	uint8_t i = 255;	// start off disabled
-	uint8_t row = 0;
-	uint8_t picture[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-	uint8_t byte_received;
+	enum status { init, idle, run, sample, xmit };
+
+	enum status lab3_status = init;
+	char *feedback = malloc( 50 );	// make it "big enough"
+
+	char accel_x;
+	char accel_y;
 
 	while( 1 ) {
+		display_row( (1 << lab3_status), 0, 1 );
 
-		byte_received = get_byte();
-		if( byte_received ) {
-			if( byte_received == ' ' ) {
-				// Reset the counter and clear the array
-				for( i = 0; i < 8; ++i ) {
-					picture[ (int) i ] = 0;
+		switch( lab3_status ) {
+			case init:
+				init_timer0();
+				lab3_status = idle;
+				break;
+
+			case idle:
+				if( PINA == 1 /* get_byte() == 's' */ ) {
+					lab3_status = run;
 				}
-				i = 0;
-			} else if( i >= 6 ) {
-				// do nothing
-			} else{
-				// update the data
-				picture[ (int) i ] = byte_received;
-				i = ( i + 1 ) &0b00000111;
-			}
-			
+				break;
+
+			case run:
+				if( PINA == 2/* get_byte() == 's'*/ ) {
+					lab3_status = idle;
+				} else if( check_timer0() ) {
+					lab3_status = sample;
+				}
+				break;
+
+			case sample:
+				accel_x = read_adc( 5 );
+				accel_y = read_adc( 6 );
+				lab3_status = xmit;
+				break;
+
+			case xmit:
+				sprintf( feedback, "The x accel is %d and the y accel is %d\r\n", accel_x, accel_y );
+				send_string( feedback );
+				lab3_status = run;
+				break;
+
 		}
-
-
-
-		/* Refresh display  */
-		PORTB = GREEN;
-		for( row = 0; row < 8; ++row ) {
-			PORTE = row;
-			PORTC = picture[ (int)row ];
-			_delay_us( 100 );
-		}
-		PORTC = 0;
-		
-
 	}
 
 	return 0;
