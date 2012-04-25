@@ -50,17 +50,22 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 #endif
 
 #include <avr/io.h>
-// #include <util/delay.h>
+#define F_CPU 1000000
+#include <util/delay.h>
+
 // Include the correct header file
 #include <avr/interrupt.h>
+
 // Include the correct ISR and fill it in!
 ISR( TIMER3_COMPA_vect) {
+	PORTC = 0;
 	PORTB = GREEN;
 	PORTC = ~PORTC;
 }
 
 
 ISR( BADISR_vect ) {
+	PORTC = 0;
 	PORTB = RED;
 	PORTC = 0b11011011;
 
@@ -75,8 +80,8 @@ uint8_t init( void ) {
 
 	// Set up the timer and interrupt... Lets use Timer 3
 	TCCR3A = 0b00000000;
-	TCCR3B = 0b00010101;	// CTC mode, 1/1024 prescaler
-	TCCR3C = 0;
+	TCCR3B = 0b00001101;	// CTC mode, 1/1024 prescaler
+	TCCR3C = 0b00000000;
 	OCR3A = 488;	// reset at 2Hz
 	TIMSK1 = 1<<OCIE3A;	// enable match A interrupt
 
@@ -87,7 +92,7 @@ uint8_t init( void ) {
 	PORTB = 0;
 
 	// Don't forget to enable interrupts sei();
-	sei();	// enable interrupts
+	// sei();
 
 
 	return 0;
@@ -99,7 +104,13 @@ int main (void) {
 	init();
 
 	// Jump into the while(1) loop.
-	while( 1 );
+	while( 1 ) {
+		if( TIFR3 & (1<<OCF3A) ) {
+			PORTB = GREEN | RED;
+			PORTC = ~PORTC;
+			TIFR3 |= (1<<OCF3A);
+		}
+	}
 
 	return 0;
 

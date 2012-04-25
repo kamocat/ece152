@@ -35,7 +35,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0
 
 
 ## Include Directories
-INCLUDES = -I"./" -I"./conf" -I"../../../../at90usb647" -I"../../../../common" 
+INCLUDES = -I"./" -I"./conf" 
 ##INCLUDES = -I"./.."
 
 ## Objects that must be built in order to link
