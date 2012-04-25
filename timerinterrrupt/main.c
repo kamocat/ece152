@@ -58,7 +58,6 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 
 // Include the correct ISR and fill it in!
 ISR( TIMER3_COMPA_vect) {
-	PORTC = 0;
 	PORTB = GREEN;
 	PORTC = ~PORTC;
 }
@@ -83,7 +82,7 @@ uint8_t init( void ) {
 	TCCR3B = 0b00001101;	// CTC mode, 1/1024 prescaler
 	TCCR3C = 0b00000000;
 	OCR3A = 488;	// reset at 2Hz
-	TIMSK1 = 1<<OCIE3A;	// enable match A interrupt
+	TIMSK1 = 0b00000010;	// enable match A interrupt
 
 	// Any other initializing should happen
 	/* Clear the array */
@@ -92,7 +91,7 @@ uint8_t init( void ) {
 	PORTB = 0;
 
 	// Don't forget to enable interrupts sei();
-	// sei();
+	sei();
 
 
 	return 0;
@@ -105,11 +104,11 @@ int main (void) {
 
 	// Jump into the while(1) loop.
 	while( 1 ) {
-		if( TIFR3 & (1<<OCF3A) ) {
+		/* if( TIFR3 & (1<<OCF3A) ) {
 			PORTB = GREEN | RED;
 			PORTC = ~PORTC;
 			TIFR3 |= (1<<OCF3A);
-		}
+		} */
 	}
 
 	return 0;
