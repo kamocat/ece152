@@ -1,0 +1,2 @@
+This is a simple example for an interrupt on Timer3.
+The timer should reset when it matches Compare A.
