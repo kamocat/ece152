@@ -7,7 +7,7 @@
 This is the code for the Wunderboard ADC helper functions.
 */
 
-//#include "adc.h"
+
 
 unsigned char read_adc(uint8_t channel){
 

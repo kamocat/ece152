@@ -49,6 +49,10 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 
 /** Includes */
 #include <avr/io.h>
+#include <stdlib.h> // for malloc()
+
+
+#define F_CPU 1000000U
 #include <util/delay.h>
 
 /* Found in ../lib/ */
@@ -57,7 +61,6 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 #include <led.h>
 
 /** Constants */
-#define F_CPU 1000000U
 
 
 /** Global Variables */
@@ -118,8 +121,13 @@ unsigned char init_timer0( void ) {
 	/* Clear timer on match - don't change outputs */
 	TCCR0A = 0b00000010;
 
-	/* Set the timer to overflow every 1/4 seconds */
-	set_timer0( 5, 250 );
+	/* 
+	 * Set the timer to overflow every 1/4 seconds 
+	 * We actually want ever 1/2 secons, but the counter doesn't
+	 * go up that high, so we just wait for it twice in the state
+	 * machine
+	 */
+	set_timer0( 5, 244 );
 
 	return 0;	// this function never fails
 }
@@ -155,9 +163,16 @@ int main (void) {
 	/** Local Varibles */
 	
 	initialize();
+	init_UART();
 	clear_array();
 
-	enum status { init, idle, run, sample, xmit };
+	enum status { 
+		init = 0, 
+		idle, 
+		run, 
+		waitagain,
+		sample, 
+		xmit };
 
 	enum status lab3_status = init;
 	char *feedback = malloc( 50 );	// make it "big enough"
@@ -175,16 +190,23 @@ int main (void) {
 				break;
 
 			case idle:
-				if( PINA == 1 /* get_byte() == 's' */ ) {
+				if( get_byte() == 's' ) {
 					lab3_status = run;
 				}
 				break;
 
 			case run:
-				if( PINA == 2/* get_byte() == 's'*/ ) {
+			case waitagain:
+				if( get_byte() == 's' ) {
 					lab3_status = idle;
 				} else if( check_timer0() ) {
-					lab3_status = sample;
+					/* 
+					 * Here we go to the next step instead of explicitely
+					 * assigning the next step, because we need the counter 
+					 * to roll over twice before moving on to the measure-
+					 * ment step.
+					 */
+					++lab3_status;
 				}
 				break;
 
@@ -195,7 +217,9 @@ int main (void) {
 				break;
 
 			case xmit:
-				sprintf( feedback, "The x accel is %d and the y accel is %d\r\n", accel_x, accel_y );
+				sprintf( feedback, 
+						  "The x accel is %d and the y accel is %d\r\n", 
+						  accel_x, accel_y );
 				send_string( feedback );
 				lab3_status = run;
 				break;
@@ -203,5 +227,6 @@ int main (void) {
 		}
 	}
 
+	free( feedback );
 	return 0;
 }//main

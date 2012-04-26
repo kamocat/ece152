@@ -66,19 +66,19 @@ return a 1 if the string was not sent.
 char send_string(char *data ){
 	uint8_t length = strlen( data );
 	/* First check if the comm port is ready */
-	char error;
+	char error = 0;
 	if( length > 0 ) {
-		//error = send_byte( data[0] );
-		//if( !error ) {
+		error = send_byte( data[0] );
+		if( !error ) {
 			//PORTC = data[0];
-			for( char i = 0; i < length; ++i ) {
+			for( char i = 1; i < length; ++i ) {
 				/* Wait until send is done */
 				while( !(UCSR1A & 0b00100000) );
 				
 				/* Now we can send the data */
 				UDR1 = data[ (int)i ];
 			}
-		//}
+		}
 	} else {
 		error = 1;
 	}
