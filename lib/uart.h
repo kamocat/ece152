@@ -19,7 +19,7 @@ unsigned char init_UART( void ) {
 	/* Set the U2X1 bit to get more reliable transmission at 9600 */
 	UCSR1A = 0b00000010;
 	/* Enable receiver and transmitter */
-	UCSR1B = 0b00011000;
+	UCSR1B = 0b10011000;
 	/* Set frame format: 8data, 1stop bit */
 	UCSR1C = 0b00000110;
 
