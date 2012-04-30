@@ -6,6 +6,65 @@
 #include <stdio.h>	// for sprintf
 #include <avr/io.h>	// for register macros
 
+
+
+
+
+#ifdef PASTE_ME
+/* This is just to keep the code from being included twice.
+ * Don't include the PASTE_ME define, or the second "endif".
+ */
+
+
+#ifdef INTERRUPT_DRIVEN_UART
+/***************************************************
+ * For interrupt handling, run sei() and paste this code into your 
+ * main.c file.  The surrounding "ifdef" is neccessary because it
+ * is used in the header to determine whether to enable the UART
+ * RCV interrupts.  (Transmit is currently not interrupt-driven).
+ */
+uint8_t uart_rcvd[8];	// this data is live, and unsafe
+uint8_t byte_index = 255;	// start off disabled
+uint8_t byte_received;
+uint8_t buffered_rcv[8];	// this data is only updated after vefiricaton
+
+ISR( BADISR_vect ) {
+	// Do nothing
+}
+
+ISR( USART1_RX_vect ) {
+	byte_received = UDR1;	// copy the data before it goes away
+	// Use a space to signal a new message
+	if( byte_received == ' ' ) {
+		// Reset the counter and clear the array
+		for( byte_index = 0; byte_index < 8; ++byte_index ) {
+			uart_rcvd[ (int) byte_index ] = 0;
+		}
+		byte_index = 0;
+	} else if( byte_index < 6 ){
+		// update the data
+		uart_rcvd[ (int) byte_index ] = byte_received;
+		byte_index = ( byte_index + 1 ) &0b00000111;
+
+		// If this is the last byte, update the buffered data.
+		if( byte_index == 6 ) {
+			for( byte_index = 0; byte_index < 8; ++byte_index ) {
+				buffered_rcv[ (int) byte_index ] =
+					uart_rcvd[ (int) byte_index ];
+			}
+		}
+	}
+
+
+}
+/*********** End interrupt-driven UART ***********/
+#endif
+
+
+
+#endif
+
+
 #ifndef HORNM_SERIAL_DEBUG
 #define HORNM_SERIAL_DEBUG
 
@@ -19,10 +78,14 @@ unsigned char init_UART( void ) {
 	/* Set the U2X1 bit to get more reliable transmission at 9600 */
 	UCSR1A = 0b00000010;
 	/* Enable receiver and transmitter */
-	UCSR1B = 0b10011000;
+	UCSR1B = 0b00011000;
 	/* Set frame format: 8data, 1stop bit */
 	UCSR1C = 0b00000110;
 
+
+#ifdef INTERRUPT_DRIVEN_UART
+	UCSR1B |= 0x80;	// enable the receive interrupt
+#endif
 	return 0;
 
 }

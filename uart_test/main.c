@@ -55,6 +55,7 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 #include <util/delay.h>
 
 /* Found in ../lib/ */
+#define INTERRUPT_DRIVEN_UART
 #include <uart.h>
 #include <adc.h>
 #include <led.h>
@@ -63,10 +64,6 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 
 
 /** Global Variables */
-uint8_t picture[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-uint8_t i = 255;	// start off disabled
-uint8_t row = 0;
-uint8_t byte_received;
 
 /** Functions */
 
@@ -95,30 +92,45 @@ void initialize(void) {
 	sei();
 }
 
+
+/*********** Interrupt-driven UART **************************/
+
+uint8_t uart_rcvd[8];	// Auto-initialized to 0s
+uint8_t byte_index = 255;	// start off disabled
+uint8_t byte_received;
+uint8_t buffered_rcv[8];	// auto-initialized to 0s
+
 ISR( BADISR_vect ) {
 	// Do nothing
 }
 
 ISR( USART1_RX_vect ) {
-	picture[7] = 0;
-	byte_received = UDR1;
+	byte_received = UDR1;	// copy the data before it goes away
+	// Use a space to signal a new message
 	if( byte_received == ' ' ) {
 		// Reset the counter and clear the array
-		for( i = 0; i < 8; ++i ) {
-			picture[ (int) i ] = 0;
+		for( byte_index = 0; byte_index < 8; ++byte_index ) {
+			uart_rcvd[ (int) byte_index ] = 0;
 		}
-		i = 0;
-	} else if( i >= 6 ) {
-		// do nothing
-	} else{
+		byte_index = 0;
+	} else if( byte_index < 6 ){
 		// update the data
-		picture[ (int) i ] = byte_received;
-		i = ( i + 1 ) &0b00000111;
-		send_byte( byte_received ); // send back to terminal
+		uart_rcvd[ (int) byte_index ] = byte_received;
+		byte_index = ( byte_index + 1 ) &0b00000111;
+
+		// If this is the last byte, update the buffered data.
+		if( byte_index == 6 ) {
+			for( byte_index = 0; byte_index < 8; ++byte_index ) {
+				buffered_rcv[ (int) byte_index ] =
+					uart_rcvd[ (int) byte_index ];
+			}
+		}
 	}
 
 
 }
+/*********** End interrupt-driven UART ***********/
+
 
 
 
@@ -129,6 +141,8 @@ int main (void) {
 	
 	initialize();
 	init_UART();
+
+	uint8_t row;	// used for displaying the pixels
 
 
 	while( 1 ) {
@@ -141,7 +155,7 @@ int main (void) {
 		for( row = 0; row < 8; ++row ) {
 			PORTC = 0;
 			PORTE = row;
-			PORTC = picture[ (int)row ];
+			PORTC = buffered_rcv[ (int)row ];
 			_delay_us( 100 );
 		}
 		PORTC = 0;
