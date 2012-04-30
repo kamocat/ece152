@@ -56,6 +56,7 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 #include <util/delay.h>
 
 /* Found in ../lib/ */
+#define INTERRUPT_DRIVEN_UART
 #include <uart.h>
 #include <adc.h>
 #include <led.h>
@@ -86,6 +87,7 @@ void initialize(void) {
 
 	/** Port F has the accelerometer and audio-in on it. Leave DDRF alone. ( 0 = Input and 1 = Output )*/
 	DDRF=0b00000000;
+	sei();
 }
 
 /** The clearArray() function turns off all LEDS on the Wunderboard array. It accepts no inputs and returns nothing*/
@@ -94,6 +96,27 @@ void clear_array(void)
 	PORTC = 0x00;
 	PORTB |= (1 << PB6) | (1 << PB7);		/** Enable latches*/
 }
+
+
+
+#ifdef INTERRUPT_DRIVEN_UART
+/***************************************************
+ * For interrupt handling, run sei() and paste this code into your 
+ * main.c file.  The surrounding "ifdef" is neccessary because it
+ * is used in the header to determine whether to enable the UART
+ * RCV interrupts.  (Transmit is currently not interrupt-driven).
+ */
+
+ISR( BADISR_vect ) {
+	// Do nothing
+}
+
+ISR( USART1_RX_vect ) {
+	byte_received = UDR1;	// copy the data before it goes away
+}
+/*********** End interrupt-driven UART ***********/
+#endif
+
 
 
 
