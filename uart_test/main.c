@@ -78,6 +78,10 @@ void initialize(void) {
 	/** Port C is for the 'row' of the LED array. They should always be outputs. ( 0 = Input and 1 = Output )*/
 	DDRC=0b11111111;
 
+	/* Clear the array */
+	PORTB = 0b11000000;
+	PORTC = 0;
+
 	/** Port D has the Serial on it. Leave DDRB alone. ( 0 = Input and 1 = Output )*/
 	DDRD=0b00000000;
 
