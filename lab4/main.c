@@ -65,6 +65,19 @@ F7 		: ADC Channel 7 (Accel Z Axis (if installed))
 
 
 /** Global Variables */
+enum status { 
+	init = 0, 
+	idle, 
+	run, 
+	waitagain,
+	sample, 
+	xmit };
+
+volatile enum status lab3_status = init;
+volatile char feedback[50];	// make it "big enough"
+
+uint8_t accel_x;
+uint8_t accel_y;
 
 /** Functions */
 
@@ -87,6 +100,8 @@ void initialize(void) {
 
 	/** Port F has the accelerometer and audio-in on it. Leave DDRF alone. ( 0 = Input and 1 = Output )*/
 	DDRF=0b00000000;
+
+
 	sei();
 }
 
@@ -112,7 +127,13 @@ ISR( BADISR_vect ) {
 }
 
 ISR( USART1_RX_vect ) {
-	byte_received = UDR1;	// copy the data before it goes away
+	if( UDR1 == 's' ) {
+		if( lab3_status == idle ) {
+			lab3_status = run;
+		} else {
+			lab3_status = idle;
+		}
+	}
 }
 /*********** End interrupt-driven UART ***********/
 #endif
@@ -143,6 +164,7 @@ unsigned char set_timer0(unsigned char clock, unsigned char count) {
 unsigned char init_timer0( void ) {
 	/* Clear timer on match - don't change outputs */
 	TCCR0A = 0b00000010;
+	TIMSK0 = 0b010;	// enable compare match A interrupt
 
 	/* 
 	 * Set the timer to overflow every 1/4 seconds 
@@ -176,7 +198,37 @@ unsigned char check_timer0( void ) {
 
 
 
+ISR( TIMER0_COMPA_vect ) {
+	switch( lab3_status ) {
+		case run:
+			lab3_status = waitagain;
+			/*
+			 * We wait again here because our timer can't give us a full
+			 * half-second; Instead, it is timed for a quarter second, 
+			 * and we simply sample ever OTHER time
+			 */
+			break;
+		case waitagain: 
 
+			accel_x = read_adc( 5 );
+			accel_y = read_adc( 6 );
+
+			/* Now send */
+
+			/*
+			 * I'd like to use a queue for the send, so it is 
+			 * interrupt-controlled as well.
+			 */
+			sprintf( feedback, 
+					  "The x accel is %d and the y accel is %d\r\n", 
+					  accel_x, accel_y );
+			send_string( feedback );
+			lab3_status = run;
+			break;
+		default:
+			break;
+	}
+}
 
 
 
@@ -187,68 +239,18 @@ int main (void) {
 	
 	initialize();
 	init_UART();
-	clear_array();
+	init_timer0();
 
-	enum status { 
-		init = 0, 
-		idle, 
-		run, 
-		waitagain,
-		sample, 
-		xmit };
 
-	enum status lab3_status = init;
-	char *feedback = malloc( 50 );	// make it "big enough"
-
-	char accel_x;
-	char accel_y;
 
 	while( 1 ) {
-		display_row( (1 << lab3_status), 0, 1 );
-
-		switch( lab3_status ) {
-			case init:
-				init_timer0();
-				lab3_status = idle;
-				break;
-
-			case idle:
-				if( get_byte() == 's' ) {
-					lab3_status = run;
-				}
-				break;
-
-			case run:
-			case waitagain:
-				if( get_byte() == 's' ) {
-					lab3_status = idle;
-				} else if( check_timer0() ) {
-					/* 
-					 * Here we go to the next step instead of explicitely
-					 * assigning the next step, because we need the counter 
-					 * to roll over twice before moving on to the measure-
-					 * ment step.
-					 */
-					++lab3_status;
-				}
-				break;
-
-			case sample:
-				accel_x = read_adc( 5 );
-				accel_y = read_adc( 6 );
-				lab3_status = xmit;
-				break;
-
-			case xmit:
-				sprintf( feedback, 
-						  "The x accel is %d and the y accel is %d\r\n", 
-						  accel_x, accel_y );
-				send_string( feedback );
-				lab3_status = run;
-				break;
-
+		if( lab3_status == init ) {
+			lab3_status = idle;
 		}
+		display_row( (1 << lab3_status), 0, 1 );
 	}
+
+
 
 	free( feedback );
 	return 0;
