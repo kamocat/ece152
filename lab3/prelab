@@ -1,0 +1,56 @@
+ECE 152 Lab 3 Prelab
+Marshal Horn
+
+1.a) TCCR0B controls how fast the timer counts.  This can be done using
+the force output compare bits, or the clock select bits (or both).
+
+b) OCR0A is the value with which the timer is compared.  Depending on the
+mode of the timer, an output match can be used as a waveform, or create
+and interrupt.
+
+c) TIFR0 is the interrupt flag register.  A bit is set when its interrupt
+status occurs, and is cleared when the interrupt is handled.
+
+d) FOC0A is the Force Output Compare bit for the output compare A.  Setting
+this bit will cause the microcontrollor to act as if the timer value did
+indeed equal OCR0A.
+
+e) CS02:0 are the clock select bits.  These are used to determine how fast
+the timer counts.
+
+2. OCR0A is the value with which the timer is compared.  Depending on the
+mode of the timer, an output match can be used as a waveform, or create
+and interrupt.
+
+3. enum status { idle, running, walking };
+
+4. Draw below a 5-state state diagram for going out on a date.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5. itoa() converts a number into an ASCII string.  It is the opposite of
+atoi().  So, if we write
+	int x = atoi( itoa( 5 ) );
+                          we should get x = 5.

@@ -63,6 +63,11 @@ ISR( USART1_RX_vect ) {
 
 
 }
+
+
+ISR( USART1_UDRE_vect ) {
+	/* Send the next byte */
+}
 /*********** End interrupt-driven UART ***********/
 #endif
 

@@ -1,0 +1,72 @@
+Study questions for lab 3
+ECE 152
+Marshal Horn
+
+
+1. (drawn on attached sheet of paper)
+
+2.
+
+int main( void ) {
+	char input;
+	enum status {
+		init,
+		play,
+		pause,
+		ffwd,
+		rev,
+		stop,
+	}
+	enum status video_state = init;
+	int16_t frame = 0;
+
+	while(1) {
+		switch( video_state ) {
+			case init:
+				setup_video();
+				frame = 0;
+				video_state = stop;
+				break;
+			case play:
+				image = get_image( frame );
+				display( image );
+				++frame;
+				break;
+			case pause:
+				/* Just keep displaying the same image */
+				display( image );
+				break;
+			case ffwd:
+				frame += 5;
+				image = get_image( frame );
+				display( image );
+				break;
+			case rev:
+				// decrease the frame, but don't go past 0
+				frame = ( frame >= 2 ) ? (frame - 2) : 0;
+				image = get_image( frame );
+				display( image );
+				break;
+			case stop:
+				clear_display();
+				break;
+		}
+		
+		input = get_byte();
+		switch( input ) {
+			case 'p':
+				video_state = play;
+				break;
+			case ' ':
+				video_state = pause;
+				break;
+			case '
+				
+
+
+
+				
+
+
+
+
