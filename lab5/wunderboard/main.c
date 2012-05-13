@@ -10,11 +10,11 @@
 /* CONSTANTS */
 #define F_CPU 1000000U
 #define STRING_LENGTH 10
+// #define INTERRUPT_DRIVEN_UART
 
 /* INCLUDED LIBRARIES */
-// #include <uart.h>
-#include <stdio.h>
-#include <stdint.h>
+#include <uart.h>
+#include <util/delay.h>
 
 
 
@@ -119,11 +119,38 @@ uint8_t int_to_ascii( int value, char *number, uint8_t length ) {
 
 
 int main( int argc, char **argv ) {
+	init_UART();
 	char string[ STRING_LENGTH ];
-	int value = 12345;
-	int_to_ascii( value, string, STRING_LENGTH );
+	int value = 0;
+	enum step{
+		increment,
+		decrement
+	};
+	enum step direction = increment;
 
-	printf("%d == %s.\n", value, string );
+	while(1) {
+		switch( direction ) {
+			case increment:
+				++value;
+				if( value >= 50 ) {
+					direction = decrement;
+				}
+				break;
+			case decrement:
+				--value;
+				if( value <= 0 ) {
+					direction = increment;
+				}
+				break;
+		}
+		int_to_ascii( value, string, STRING_LENGTH );
+		send_string( string );
+		send_string( "\r\n" );
+		_delay_ms( 250 );
+	}
+
+
+
 
 	return 0;
 }
