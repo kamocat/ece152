@@ -1,0 +1,9 @@
+g++ lab5.cpp -Wall -lboost_system
+/tmp/cc5O2lyA.o: In function `boost::asio::detail::posix_tss_ptr_create(unsigned int&)':
+lab5.cpp:(.text._ZN5boost4asio6detail20posix_tss_ptr_createERj[boost::asio::detail::posix_tss_ptr_create(unsigned int&)]+0x19): undefined reference to `pthread_key_create'
+/tmp/cc5O2lyA.o: In function `boost::asio::detail::posix_tss_ptr<boost::asio::detail::call_stack<boost::asio::detail::task_io_service>::context>::~posix_tss_ptr()':
+lab5.cpp:(.text._ZN5boost4asio6detail13posix_tss_ptrINS1_10call_stackINS1_15task_io_serviceEE7contextEED2Ev[_ZN5boost4asio6detail13posix_tss_ptrINS1_10call_stackINS1_15task_io_serviceEE7contextEED5Ev]+0x15): undefined reference to `pthread_key_delete'
+/tmp/cc5O2lyA.o: In function `boost::asio::detail::posix_tss_ptr<boost::asio::detail::call_stack<boost::asio::detail::strand_service::strand_impl>::context>::~posix_tss_ptr()':
+lab5.cpp:(.text._ZN5boost4asio6detail13posix_tss_ptrINS1_10call_stackINS1_14strand_service11strand_implEE7contextEED2Ev[_ZN5boost4asio6detail13posix_tss_ptrINS1_10call_stackINS1_14strand_service11strand_implEE7contextEED5Ev]+0x15): undefined reference to `pthread_key_delete'
+collect2: ld returned 1 exit status
+make: *** [all] Error 1
