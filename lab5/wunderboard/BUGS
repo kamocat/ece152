@@ -1,0 +1,10 @@
+This file tells us about the current bugs in the program.
+Where important, it also tells us about the past bugs in the program and
+what we did to fix them.
+
+
+Without case logic for catching 0, the integer to ASCII converter doesn't
+print 0 (it returns an empty string).  Also, I suspect it doesn't handle
+negative numbers very well (-4 % 10 is 6).
+In the test for counting up from 0 to 50 and back, the newline isn't printed
+for numbers greater than 9.

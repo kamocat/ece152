@@ -95,6 +95,16 @@ uint8_t reverse_string( char *string, uint8_t end ) {
 uint8_t int_to_ascii( int value, char *number, uint8_t length ) {
 	uint8_t i = 0;
 	--length;	//turn length into the max index
+
+	/* 
+	 * The regular logic doesn't work if the value is 0, so we use case logic
+	 * to deal with this one instance.
+	 */
+	if( value == 0 ) {
+		number[0] = '0';
+		i = 1;
+	}
+
 	for( ; value; value /= 10 ) { 
 
 		/* Don't stomp over other values */
