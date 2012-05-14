@@ -15,7 +15,7 @@ endif
 
 ifeq ($(ENV),unix)
 CC = g++
-BOOSTFLAGS = -lboost_system
+BOOSTFLAGS = -lboost_system -lpthread
 else
 CC = g++
 BOOSTFLAGS = -lboost_system -lws2_32 -D _WIN32_WINNT=0x0501
