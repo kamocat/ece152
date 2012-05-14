@@ -21,7 +21,6 @@ int main(int argc, char* argv[])
 	 * simply killing the program.'
 	 */
     try { 
-
 		/*
 		 * Make a SimpleSerial object with the parameter for your 
 		 * Wunderboard/OS.
@@ -32,6 +31,16 @@ int main(int argc, char* argv[])
 		 * If you just read data at it is 'EXIT' retun from the 
 		 * program.
 		 */
+
+		/* The constructor takes the COM port and the buad rate */
+		SimpleSerial output( "/dev/ttyUSB0", 9600 );
+		
+		for( int i = 0; i < 150; ++i ) {
+			cout<<output.readLine()<<endl;
+		}
+
+
+
 		
     } catch(boost::system::system_error& e)
     {
