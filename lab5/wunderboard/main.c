@@ -154,8 +154,9 @@ int main( int argc, char **argv ) {
 				break;
 		}
 		int_to_ascii( value, string, STRING_LENGTH );
-		send_string( string );
-		send_string( "\r\n" );
+		/* we use while loops here to force the send_string to be blocking*/
+		while(send_string( string ));
+		while(send_string( "\r\n" ));
 		_delay_ms( 250 );
 	}
 
