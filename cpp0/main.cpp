@@ -12,20 +12,23 @@
 #include <iostream>
 #include <string.h>
 
-class question
-{
+using namespace std;
+
+class question{
 	public:
-		question( std::string query,
-				std::string resonse_A,
-				std::string resonse_B,
-				std::string resonse_C,
-				std::string resonse_D,
-				char answer ) {
-			strcpy( promt, query );
-			strcpy( answers[0], response_A );
-			strcpy( answers[1], response_B );
-			strcpy( answers[2], response_C );
-			strcpy( answers[3], response_D );
+		question( string query,
+				string response_A,
+				string response_B,
+				string response_C,
+				string response_D,
+				char answer,
+				string explanation ) {
+			prompt = query;
+			answers[0] = response_A;
+			answers[1] = response_B;
+			answers[2] = response_C;
+			answers[3] = response_D;
+			follow_up = explanation;
 
 			/*
 			 * Make sure answer is between A and D.
@@ -54,17 +57,26 @@ class question
 			}
 
 
-			int return_value;
-			std::string response;
+			int return_value = -1;
+			string response;
 
-			cin>>response;
-			if( response.cstring()[0] == correct ) {
-				cout<<"Good job!"<<endl;
-				return_value = 0;
-			} else {
-				cout<<"Nope, wrong answer"<<endl;
-				return_value = response.cstring()[0];
+			while( return_value < 0 ) {
+				cin>>response;
+
+				if( response[0] == correct ) {
+					cout<<"Good job!"<<endl;
+					return_value = 0;
+				} else if( response[0] > 'D' || response[0]< 'A' ) {
+					cout<<"That response is out of range.  Please enter A, B, C, or D."<<endl;
+				}	else {
+					cout<<"Sorry, "<<response<<" is not correct."<<endl;
+					cout<<follow_up<<endl;
+					return_value = 1;
+				}
 			}
+			
+			/* Leave a few lines space between jokes */
+			cout<<"\n\n"<<endl;
 
 			return return_value;
 		}
@@ -77,22 +89,38 @@ class question
 
 
 	private:
-		std::string prompt;
-		std::string answers[4];
+		string prompt;
+		string answers[4];
 		char correct;
+		string follow_up;
 };
 
 
 
+
+/************ MAIN FUNCTION *************************/
+
+
 int main( int argc, char **argv ) {
-	question prob1( "How many sopranos does it take to change a lightbulb?",
+	question joke1( "How many sopranos does it take to change a lightbulb?",
 			"One",
 			"Two",
 			"Fifteen",
 			"One Hundred",
-			A );
+			'A',
+			"It only takes one.  She holds up the bulb, and the world spins around her." );
 
-	prob1.ask();
+	question joke2( "If Elvis is alive, then he is living on Neptune.  That statement is:",
+			"True",
+			"False",
+			"True AND False",
+			"None of the above",
+			'A',
+			"The statement is vaccuously true, because the hypothesis is false.");
+
+	joke1.ask();
+	joke2.ask();
+	cout<<"Thanks for playing!"<<endl;
 
 	return 0;
 }
