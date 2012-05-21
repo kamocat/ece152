@@ -4,14 +4,14 @@
 #include "SimpleSerial.h"
 
 using namespace std;
-using namespace boost;
+// using namespace boost;
 
 int main(int argc, char* argv[])
 {
 	int return_value = 0;
 
-	string inputstr;
-	cout << "Lab 5 Code Started" << endl;
+	std::string inputstr;
+	std::cout << "Lab 5 Code Started" << std::endl;
 
 	/*
 	 * When you are dealing with IO devices, it is very important 
@@ -24,23 +24,28 @@ int main(int argc, char* argv[])
 		/*
 		 * Make a SimpleSerial object with the parameter for your 
 		 * Wunderboard/OS.
-		 * Start reading data from your wunderboard and 
-		 * displaying it to the screen.
-		 * Check if there is input to be read from the keyboard.
-		 * If there is THEN read it, otherwise ignore the keyboard
-		 * If you just read data at it is 'EXIT' retun from the 
-		 * program.
+		 * The constructor takes the COM port and the buad rate
 		 */
-
-		/* The constructor takes the COM port and the buad rate */
-		SimpleSerial output( "/dev/ttyUSB0", 9600 );
+		SimpleSerial wunderboard( "/dev/ttyUSB0", 9600 );
+		std::string typed;
 		
-		for( int i = 0; i < 150; ++i ) {
-			cout<<output.readLine()<<endl;
-		}
+		do{
+			/*
+			 * Start reading data from your wunderboard and 
+			 * displaying it to the screen.
+			 */
+			std::cout<<wunderboard.readLine()<<std::endl;
 
 
+			/*
+			 * Check if there is input to be read from the keyboard.
+			 * If there is THEN read it, otherwise ignore the keyboard
+			 * If you just read data at it is 'EXIT' retun from the 
+			 * program.
+			 */
+			// cin>>typed;
 
+		}while( typed != "EXIT"  );
 		
     } catch(boost::system::system_error& e)
     {
