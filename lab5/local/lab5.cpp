@@ -2,9 +2,9 @@
 
 #include <iostream>
 #include "SimpleSerial.h"
+#include "kbhit.hpp"
 
 using namespace std;
-// using namespace boost;
 
 int main(int argc, char* argv[])
 {
@@ -12,6 +12,13 @@ int main(int argc, char* argv[])
 
 	std::string inputstr;
 	std::cout << "Lab 5 Code Started" << std::endl;
+
+
+	/* Turn stdin to raw mode */
+	changemode(1);
+
+	enum state { E, X, I, T, done } exit_yet;
+	char ch;
 
 	/*
 	 * When you are dealing with IO devices, it is very important 
@@ -43,9 +50,36 @@ int main(int argc, char* argv[])
 			 * If you just read data at it is 'EXIT' retun from the 
 			 * program.
 			 */
-			// cin>>typed;
+			string user_input;
 
-		}while( typed != "EXIT"  );
+			while( kbhit() ) {
+
+				ch = getchar();
+
+				switch( exit_yet ){
+					case E:
+						exit_yet = ( ch == 'E' ) ? X : E;
+						break;
+					case X:
+						exit_yet = (ch == 'X' ) ? I : E;
+						break;
+					case I:
+						exit_yet = (ch == 'I' ) ? T : E;
+						break;
+					case T:
+						exit_yet = (ch == 'T' ) ? done : T;
+						break;
+					default:
+						break;
+				}
+				
+				// Add character to string
+				user_input += ch;
+			}
+			cout<<user_input<<endl;
+			wunderboard.writeString( user_input );
+
+		}while( exit_yet != done );
 		
     } catch(boost::system::system_error& e)
     {
