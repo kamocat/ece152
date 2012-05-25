@@ -17,7 +17,8 @@ int main(int argc, char* argv[])
 	/* Turn stdin to raw mode */
 	changemode(1);
 
-	enum state { E, X, I, T, done } exit_yet;
+	enum state { E, X, I, T, done };
+	enum state exit_yet = E;
 	char ch;
 
 	/*
@@ -34,16 +35,8 @@ int main(int argc, char* argv[])
 		 * The constructor takes the COM port and the buad rate
 		 */
 		SimpleSerial wunderboard( "/dev/ttyUSB0", 9600 );
-		std::string typed;
 		
 		do{
-			/*
-			 * Start reading data from your wunderboard and 
-			 * displaying it to the screen.
-			 */
-			std::cout<<wunderboard.readLine()<<std::endl;
-
-
 			/*
 			 * Check if there is input to be read from the keyboard.
 			 * If there is THEN read it, otherwise ignore the keyboard
@@ -51,33 +44,45 @@ int main(int argc, char* argv[])
 			 * program.
 			 */
 			string user_input;
+			int p;
 
-			while( kbhit() ) {
+			while( (p = kbhit()) ) {
+
+				// Use this to see when kbhit responds
+				// cout<<p;
 
 				ch = getchar();
 
+				// Add character to string
+				user_input += ch;
+
 				switch( exit_yet ){
 					case E:
-						exit_yet = ( ch == 'E' ) ? X : E;
-						break;
+						exit_yet = (ch == 'e' ) ? X : E;
+						continue;
 					case X:
-						exit_yet = (ch == 'X' ) ? I : E;
-						break;
+						exit_yet = (ch == 'x' ) ? I : E;
+						continue;
 					case I:
-						exit_yet = (ch == 'I' ) ? T : E;
-						break;
+						exit_yet = (ch == 'i' ) ? T : E;
+						continue;
 					case T:
-						exit_yet = (ch == 'T' ) ? done : T;
-						break;
+						exit_yet = (ch == 't' ) ? done : E;
+						continue;
 					default:
 						break;
 				}
 				
-				// Add character to string
-				user_input += ch;
 			}
 			cout<<user_input<<endl;
-			wunderboard.writeString( user_input );
+			// wunderboard.writeString( user_input );
+			/*
+			 * Start reading data from your wunderboard and 
+			 * displaying it to the screen.
+			 */
+			std::cout<<wunderboard.readLine()<<std::endl;
+
+
 
 		}while( exit_yet != done );
 		
