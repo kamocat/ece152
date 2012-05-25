@@ -1,0 +1,6 @@
+#ignore compiled files
+*.out
+
+#ignore vim files
+*.swp
+*~
