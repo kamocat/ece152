@@ -9,13 +9,27 @@ public:
 	friend class Rps;
 	
 	Player(std::string name){
-		/* We don't intialize srand because we don't want it to
-		 * be the same for all players. */
-		// srand ( time(NULL) );
+		srand ( time(NULL) );
 		
 		Player::name = name;
+		won = 0;
+		lost = 0;
 
 
+	}
+
+	std::string get_name() {
+		return name;
+	}
+
+	int score() {
+		return won;
+	}
+
+	int score( int *wins, int *losses ) {
+		*wins = won;
+		*losses = lost;
+		return won;
 	}
 	
 	string guess(){
@@ -37,10 +51,27 @@ public:
 	}
 	
 	string userguess(){
-		
-/*Extra Challenge 1: 
-	Get User input for one of the guesses*/
-		
+	/* Extra Challenge 1: 
+	 * Get User input for one of the guesses*/
+		cout<<"What is your guess?  Rock, Paper, or Scissors?"<<endl;
+		std::string guess;
+		cin>>guess;
+		return guess;
+	}
+
+
+
+
+	int win() {
+		++won;
+		cout<<name<<" has now won "<<won<<" times!"<<endl;
+		return won;
+	}
+
+	int lose() {
+		++lost;
+		cout<<name<<" has now lost "<<won<<" times!"<<endl;
+		return lost;
 	}
 
 /*Extra Challenge 2: 
